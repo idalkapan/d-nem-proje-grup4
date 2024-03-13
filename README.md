@@ -64,3 +64,72 @@ int main() {
     return 0;       // main fonksiyonunu başarıyla bitir
 }
 
+#include <iostream>
+#include <string>
+#include <sstream>
+
+using namespace std;
+
+string dogrusalsifreleme(const string& metin, int a, int b) {
+    string sifrelimetin = "";
+
+    for (char karakter : metin) {
+        int sifrelikarakter = (a * (int)karakter) + b;
+        sifrelimetin += to_string(sifrelikarakter) + " ";
+    }
+
+    return sifrelimetin;
+}
+
+string dogrusaldesifreleme(const string& sifrelimetin, int a, int b) {
+    string asilmetin = "";
+
+    istringstream iss(sifrelimetin);
+    string sifreliDeger;
+
+    try {
+        while (iss >> sifreliDeger) {
+            int sifrelikarakter = stoi(sifreliDeger);
+            int asilkarakter = (sifrelikarakter - b) / a;
+            asilmetin += (char)asilkarakter;
+        }
+    } catch (const std::out_of_range& e) {
+        cout << "Hata: Tamsayı sınırları dışında bir değer var. Deşifreleme başarısız." << endl;
+        return "";
+    } catch (const std::invalid_argument& e) {
+        cout << "Hata: Geçersiz bir giriş var. Deşifreleme başarısız." << endl;
+        return "";
+    }
+
+    return asilmetin;
+}
+
+int main() {
+    cout << "Şifreleme mi (1) Deşifreleme mi (2) yapmak istersiniz? ";
+    int secim;
+    cin >> secim;
+
+    cin.ignore(); 
+
+    cout << "İşlem yapmak istediğiniz metni giriniz: ";
+    string metin;
+    getline(cin, metin);
+
+    int a = 3;
+    int b = 8;
+
+    if (secim == 1) {
+        string sifrelenmismetin = dogrusalsifreleme(metin, a, b);
+        cout << "Şifrelenmiş Metininiz: " << sifrelenmismetin << "\n";
+    } else if (secim == 2) {
+        string cozulmusmetin = dogrusaldesifreleme(metin, a, b);
+        if (!cozulmusmetin.empty()) {
+            cout << "Çözülmüş Metininiz: " << cozulmusmetin << "\n";
+        }
+    } else {
+        cout << "Şifreleme (1) veya Deşifreleme (2) şeklinde cevap vermelisiniz. \n";
+        return 1;
+    }
+
+    return 0;
+}
