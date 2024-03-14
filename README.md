@@ -133,3 +133,63 @@ int main() {
 
     return 0;
 }
+
+#include <iostream>
+#include <openssl/rsa.h>
+#include <openssl/err.h>
+#include <cstring>
+
+std::string rsaEncrypt(const std::string& plaintext, RSA* rsaPublicKey) {
+    int rsaLen = RSA_size(rsaPublicKey);
+    unsigned char* encryptedText = new unsigned char[rsaLen];
+
+    int result = RSA_public_encrypt(plaintext.length(), reinterpret_cast<const unsigned char*>(plaintext.c_str()), encryptedText, rsaPublicKey, RSA_PKCS1_OAEP_PADDING);
+
+    if (result == -1) {
+        ERR_load_crypto_strings();
+        ERR_print_errors_fp(stderr);
+        delete[] encryptedText;
+        return "";
+    }
+
+    std::string text(reinterpret_cast<char*>(encryptedText), result);
+    delete[] encryptedText;
+
+    return text;
+}
+
+std::string rsaDecrypt(const std::string& text, RSA* rsaPrivateKey) {
+    int rsaLen = RSA_size(rsaPrivateKey);
+    unsigned char* decryptedText = new unsigned char[rsaLen];
+
+    int result = RSA_private_decrypt(text.length(), reinterpret_cast<const unsigned char*>(text.c_str()), decryptedText, rsaPrivateKey, RSA_PKCS1_OAEP_PADDING);
+
+    if (result == -1) {
+        ERR_load_crypto_strings();
+        ERR_print_errors_fp(stderr);
+        delete[] decryptedText;
+        return "";
+    }
+
+    std::string plaintext(reinterpret_cast<char*>(decryptedText), result);
+    delete[] decryptedText;
+
+    return plaintext;
+}
+
+int main() {
+    RSA* rsaKeyPair = RSA_generate_key(2048, RSA_F4, nullptr, nullptr);
+
+    std::string Text = "Şifreleme, RSA Encryption!";
+    std::cout << "Original Text: " << Text << std::endl;
+
+    std::string encryptedText = rsaEncrypt(Text, rsaKeyPair);
+    std::cout << "Encrypted Text: " << encryptedText << std::endl;
+
+    std::string decryptedText = rsaDecrypt(encryptedText, rsaKeyPair);
+    std::cout << "Decrypted Text: " << decryptedText << std::endl;
+
+    RSA_free(rsaKeyPair);
+
+    return 0;
+}
