@@ -63,7 +63,7 @@ int main() {
     dosya.close();  // Dosyayı kapat
     return 0;       // main fonksiyonunu başarıyla bitir
 }
-
+--------------------------------
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -133,7 +133,7 @@ int main() {
 
     return 0;
 }
-
+---------------------------------------
 #include <iostream>
 #include <openssl/rsa.h>
 #include <openssl/err.h>
@@ -192,4 +192,170 @@ int main() {
     RSA_free(rsaKeyPair);
 
     return 0;
+}
+-------------------------------------
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <cmath>
+
+using namespace std;
+
+// Fonksiyon prototipleri
+
+string sifrele(string metin);
+string desifrele(string sifreli_metin);
+
+void dosyaYaz(const string& dosya_yolu, const string& icerik) {
+
+    ofstream dosya(dosya_yolu);
+    if (!dosya.is_open()) {
+
+        cerr << "Dosya olusturulamadi: " << dosya_yolu << endl;
+        exit(1);
+
+    }
+
+    dosya << icerik;
+    dosya.close();
+}
+
+int main() {
+    int secim;
+
+    cout << "Sifrelemek icin 1/Desifrelemek icin 2: ";
+    cin >> secim;
+    cin.ignore(); // \n karakterini temizle
+
+    string dosya_yolu;
+    string dosya_ismi;
+
+    cout << "Lutfen dosya yolunu girin: ";
+    getline(cin, dosya_yolu);
+
+    cout << "Lutfen dosyanin ismini uzantisiyla giriniz: ";
+    getline(cin, dosya_ismi);
+
+    ifstream SifrelenecekDosya(dosya_yolu);
+    if (!SifrelenecekDosya.is_open()) {
+
+        cerr << "Dosya acilamadi: " << dosya_yolu << endl;
+        return 1;
+
+    }
+
+    string satir;
+    string duz_metin;
+
+    while (getline(SifrelenecekDosya, satir)) {
+
+        duz_metin.append(satir);
+
+    }
+
+    SifrelenecekDosya.close();
+
+    string sonuc;
+    if (secim == 1) {
+
+        sonuc = sifrele(duz_metin);
+        cout << "Dosya sifrelendi ve olusturuldu." << endl;
+
+    }
+    else if (secim == 2) {
+
+        sonuc = desifrele(duz_metin);
+        cout << "Dosya desifrelendi ve olusturuldu." << endl;
+
+    }
+    else {
+
+        cerr << "Gecersiz secim. Program sonlandirildi." << endl;
+        return 1;
+
+    }
+
+    dosyaYaz(dosya_ismi, sonuc);
+    remove(dosya_yolu.c_str());
+    rename(dosya_ismi.c_str(), dosya_yolu.c_str());
+
+
+    cout << "Dosya basariyla yerine konuldu." << endl;
+
+    return 0;
+}
+
+string sifrele(string metin) {
+
+    float kolon = 5.0;
+    int satir_sayisi = ceil(metin.length() / kolon);
+
+    vector<vector<char>> sifrelenmis(satir_sayisi, vector<char>(kolon));
+
+    int index = 0;
+
+    for (int col = 0; col < kolon; col++) {
+
+        for (int row = 0; row < satir_sayisi; row++) {
+
+            if (index < metin.length()) {
+
+                sifrelenmis[row][col] = metin[index];
+                index++;
+
+            }
+            else {
+
+                sifrelenmis[row][col] = ' ';
+
+            }
+        }
+    }
+
+    string sifreli_metin;
+
+    for (int row = 0; row < satir_sayisi; row++) {
+
+        for (int col = 0; col < kolon; col++) {
+
+            sifreli_metin += sifrelenmis[row][col];
+
+        }
+    }
+
+    return sifreli_metin;
+}
+
+string desifrele(string sifreli_metin) {
+
+    float kolon = 5.0;
+    int satir_sayisi = sifreli_metin.length() / kolon;
+
+    vector<vector<char>> desifrelenmis(satir_sayisi, vector<char>(kolon));
+
+    int index = 0;
+
+    for (int row = 0; row < satir_sayisi; row++) {
+
+        for (int col = 0; col < kolon; col++) {
+
+            desifrelenmis[row][col] = sifreli_metin[index];
+            index++;
+
+        }
+    }
+
+    string duz_metin;
+
+    for (int col = 0; col < kolon; col++) {
+
+        for (int row = 0; row < satir_sayisi; row++) {
+
+            duz_metin += desifrelenmis[row][col];
+
+        }
+    }
+
+    return duz_metin;
 }
